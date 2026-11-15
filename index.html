@@ -8,9 +8,6 @@
 <meta name="apple-mobile-web-app-title" content="مدينة الأصدقاء">
 <title>مدينة الأصدقاء 3D</title>
 
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231e3c72'/><text y='.9em' x='12' font-size='75'>🏙️</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231e3c72'/><text y='.9em' x='12' font-size='75'>🏙️</text></svg>">
-
 <style>
   * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; font-family: Tahoma, Arial, sans-serif; }
   body, html { width: 100%; height: 100%; overflow: hidden; background: #87CEEB; }
@@ -42,6 +39,7 @@
     background: #28a745; color: white; font-size: 18px; font-weight: bold;
     cursor: pointer; margin-top: 8px;
   }
+  #playBtn:disabled { background: #6c757d; cursor: wait; }
   #installAppBtn {
     width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #FFD700;
     background: rgba(255,215,0,0.15); color: #FFD700; font-size: 14px; font-weight: bold;
@@ -154,7 +152,7 @@
       <div class="char-btn" onclick="selectChar('man', this)">👨 رجل</div>
       <div class="char-btn" onclick="selectChar('woman', this)">👩 فتاة</div>
     </div>
-    <button id="playBtn" onclick="startGame()">دخول المدينة واستلام الخيمة 🚀</button>
+    <button id="playBtn" disabled onclick="startGame()">⏳ جارٍ تجهيز المدينة...</button>
     <button id="installAppBtn" onclick="triggerInstall()">📲 تثبيت اللعبة كأيقونة على الهاتف</button>
   </div>
 </div>
@@ -204,15 +202,26 @@
 
 <canvas id="gameCanvas"></canvas>
 
-<script src="https://jsdelivr.net"></script>
-<script src="https://jsdelivr.net"></script>
-
 <script>
+// تحميل المحرك بطريقة لا تتأثر بقص الروابط في حافظة الهاتف
+function addLib(b64, cb) {
+  const s = document.createElement('script');
+  s.src = atob(b64);
+  if (cb) s.onload = cb;
+  document.head.appendChild(s);
+}
+function engineReady() {
+  const btn = document.getElementById('playBtn');
+  btn.disabled = false;
+  btn.innerText = 'دخول المدينة واستلام الخيمة 🚀';
+}
+addLib('aHR0cHM6Ly91bnBrZy5jb20vdGhyZWVAMC4xMjguMC9idWlsZC90aHJlZS5taW4uanM=', engineReady);
+addLib('aHR0cHM6Ly91bnBrZy5jb20vbXF0dEA0LjMuNy9kaXN0L21xdHQubWluLmpz');
+
 const svgIcon = "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231e3c72'/><text y='.9em' x='12' font-size='75'>🏙️</text></svg>");
+const iconLink = document.createElement('link'); iconLink.rel = 'icon'; iconLink.href = svgIcon; document.head.appendChild(iconLink);
+const appleLink = document.createElement('link'); appleLink.rel = 'apple-touch-icon'; appleLink.href = svgIcon; document.head.appendChild(appleLink);
+
 const manifestObj = {
   name: "مدينة الأصدقاء 3D", short_name: "مدينة الأصدقاء", start_url: window.location.href,
   display: "standalone", background_color: "#1e3c72", theme_color: "#1e3c72",
-  icons: [{ src: svgIcon, sizes: "192x192", type: "image/svg+xml" }]
-};
-const manifestLink = document.createElement('link');
-manifestLink.rel = 'manifest';
