@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1e3c72">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="مدينة الأصدقاء">
+<title>مدينة الأصدقاء 3D</title>
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231e3c72'/><text y='.9em' x='12' font-size='75'>🏙️</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231e3c72'/><text y='.9em' x='12' font-size='75'>🏙️</text></svg>">
+
+<style>
+  * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; font-family: Tahoma, Arial, sans-serif; }
+  body, html { width: 100%; height: 100%; overflow: hidden; background: #87CEEB; }
+  #gameCanvas { width: 100%; height: 100%; display: block; touch-action: none; }
+
+  #startScreen {
+    position: fixed; inset: 0; background: linear-gradient(135deg, #1e3c72, #2a5298);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100; color: white; padding: 20px; text-align: center;
+  }
+  .card {
+    background: rgba(255,255,255,0.14); padding: 22px; border-radius: 22px;
+    width: 100%; max-width: 370px; border: 1px solid rgba(255,255,255,0.3);
+  }
+  h1 { font-size: 25px; margin-bottom: 8px; color: #FFD700; }
+  input {
+    width: 100%; padding: 12px; border-radius: 12px; border: none;
+    margin: 10px 0; font-size: 16px; text-align: center; outline: none;
+    user-select: text; -webkit-user-select: text;
+  }
+  .chars { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .char-btn {
+    padding: 10px; border-radius: 12px; border: 2px solid transparent;
+    background: rgba(255,255,255,0.18); color: white; cursor: pointer; font-size: 14px; font-weight: bold;
+  }
+  .char-btn.active { border-color: #FFD700; background: rgba(255,215,0,0.3); }
+  #playBtn {
+    width: 100%; padding: 14px; border-radius: 14px; border: none;
+    background: #28a745; color: white; font-size: 18px; font-weight: bold;
+    cursor: pointer; margin-top: 8px;
+  }
+  #installAppBtn {
+    width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #FFD700;
+    background: rgba(255,215,0,0.15); color: #FFD700; font-size: 14px; font-weight: bold;
+    cursor: pointer; margin-top: 8px;
+  }
+
+  #hud { display: none; position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  .top-bar {
+    position: absolute; top: 10px; left: 10px; right: 10px;
+    display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.92); padding: 6px 10px; border-radius: 20px;
+    font-weight: bold; font-size: 12px; color: #222; pointer-events: auto;
+  }
+  .side-btns {
+    position: absolute; right: 10px; top: 58px;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: auto;
+  }
+  .icon-btn {
+    width: 42px; height: 42px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.95); font-size: 19px; cursor: pointer;
+  }
+
+  #chatBox {
+    position: absolute; top: 58px; left: 10px; width: 210px;
+    pointer-events: auto; display: flex; flex-direction: column; gap: 4px;
+  }
+  #chatMessages {
+    max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.45);
+    border-radius: 12px; padding: 6px 8px; color: white; font-size: 11px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .chat-input-row { display: flex; gap: 4px; }
+  #chatInput {
+    flex: 1; padding: 6px 8px; border-radius: 14px; border: none;
+    font-size: 12px; margin: 0; text-align: right; background: rgba(255,255,255,0.92);
+  }
+  #sendChatBtn {
+    background: #28a745; color: white; border: none; border-radius: 14px;
+    padding: 0 10px; font-weight: bold; font-size: 11px; cursor: pointer;
+  }
+
+  #actionPrompt {
+    position: absolute; bottom: 135px; left: 50%; transform: translateX(-50%);
+    background: #FFD700; color: #111; padding: 10px 20px; border-radius: 30px;
+    font-weight: bold; font-size: 14px; display: none; pointer-events: auto;
+    cursor: pointer; border: 2px solid #fff; white-space: nowrap;
+  }
+
+  #joystickZone {
+    position: absolute; bottom: 25px; left: 25px; width: 110px; height: 110px;
+    background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 50%; pointer-events: auto; touch-action: none;
+  }
+  #joystickKnob {
+    position: absolute; width: 46px; height: 46px; background: rgba(255,255,255,0.9);
+    border-radius: 50%; top: 30px; left: 30px;
+  }
+  .right-controls {
+    position: absolute; bottom: 25px; right: 25px; display: flex; flex-direction: column; gap: 10px;
+    pointer-events: auto;
+  }
+  .ctrl-btn {
+    padding: 13px 18px; border-radius: 16px; border: none;
+    background: rgba(255,255,255,0.92); font-size: 15px; font-weight: bold;
+    cursor: pointer; color: #222;
+  }
+
+  .modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    z-index: 50; align-items: center; justify-content: center; padding: 20px; pointer-events: auto;
+  }
+  .modal-content {
+    background: white; border-radius: 20px; padding: 18px; width: 100%; max-width: 350px;
+    text-align: center; max-height: 80vh; overflow-y: auto;
+  }
+  .modal-title { font-size: 19px; font-weight: bold; margin-bottom: 10px; color: #222; }
+  .shop-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px; border: 1px solid #eee; border-radius: 12px; margin-bottom: 8px; font-size: 14px;
+  }
+  .buy-btn {
+    background: #28a745; color: white; border: none; padding: 7px 13px;
+    border-radius: 10px; font-weight: bold; cursor: pointer;
+  }
+  .close-btn {
+    margin-top: 8px; width: 100%; padding: 10px; background: #dc3545;
+    color: white; border: none; border-radius: 10px; font-weight: bold;
+  }
+  #toast {
+    position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.85); color: #FFD700; padding: 8px 16px;
+    border-radius: 20px; font-size: 13px; z-index: 200; display: none; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div id="startScreen">
+  <div class="card">
+    <h1>🏙️ مدينة الأصدقاء 3D</h1>
+    <p style="font-size:13px; opacity:0.9;">سجّل اسمك، استلم خيمتك، والعب مع أصحابك!</p>
+    <input type="text" id="playerNameInput" placeholder="اكتب اسمك هنا (مطلوب)..." maxlength="14">
+    <div class="chars">
+      <div class="char-btn active" onclick="selectChar('boy_thobe', this)">👦 ولد (ثوب وشماغ)</div>
+      <div class="char-btn" onclick="selectChar('girl', this)">👧 بنت</div>
+      <div class="char-btn" onclick="selectChar('man', this)">👨 رجل</div>
+      <div class="char-btn" onclick="selectChar('woman', this)">👩 فتاة</div>
+    </div>
+    <button id="playBtn" onclick="startGame()">دخول المدينة واستلام الخيمة 🚀</button>
+    <button id="installAppBtn" onclick="triggerInstall()">📲 تثبيت اللعبة كأيقونة على الهاتف</button>
+  </div>
+</div>
+
+<div id="hud">
+  <div class="top-bar">
+    <div class="stat-pill">👥 <span id="onlineCount">1</span></div>
+    <div class="stat-pill">💰 <span id="coinsText">150</span></div>
+    <div class="stat-pill">🍔 <span id="hungerText">100%</span></div>
+    <div class="stat-pill">🏠 <span id="houseLvlText">خيمة ⛺</span></div>
+  </div>
+
+  <div id="chatBox">
+    <div id="chatMessages">
+      <div style="color:#FFD700;">أهلاً بكم في دردشة المدينة! 💬</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="راسل أصحابك..." maxlength="50">
+      <button id="sendChatBtn" onclick="sendChat()">إرسال</button>
+    </div>
+  </div>
+
+  <div class="side-btns">
+    <button class="icon-btn" onclick="shareGame()" title="نسخ الرابط">🔗</button>
+    <button class="icon-btn" onclick="triggerInstall()" title="تثبيت">📲</button>
+    <button class="icon-btn" onclick="teleportHome()" title="بيتي">⛺</button>
+    <button class="icon-btn" onclick="honkHorn()" title="بوري">📢</button>
+    <button class="icon-btn" onclick="collectDaily()" title="هدية">🎁</button>
+  </div>
+
+  <button id="actionPrompt" onclick="triggerAction()">تفاعل</button>
+  <div id="joystickZone"><div id="joystickKnob"></div></div>
+
+  <div class="right-controls">
+    <button class="ctrl-btn" id="carBtn" style="display:none; background:#ff9800; color:white;" onclick="toggleCar()">🚗 نزول</button>
+    <button class="ctrl-btn" onclick="jump()">⬆️ قفز</button>
+  </div>
+</div>
+
+<div id="shopModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-title" id="modalTitle">المتجر</div>
+    <div id="modalBody"></div>
+    <button class="close-btn" onclick="closeModal()">إغلاق</button>
+  </div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script src="https://jsdelivr.net"></script>
+<script src="https://jsdelivr.net"></script>
+
+<script>
+const svgIcon = "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231e3c72'/><text y='.9em' x='12' font-size='75'>🏙️</text></svg>");
+const manifestObj = {
+  name: "مدينة الأصدقاء 3D", short_name: "مدينة الأصدقاء", start_url: window.location.href,
+  display: "standalone", background_color: "#1e3c72", theme_color: "#1e3c72",
+  icons: [{ src: svgIcon, sizes: "192x192", type: "image/svg+xml" }]
+};
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
