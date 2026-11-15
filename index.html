@@ -158,7 +158,7 @@
 
 <div id="hud">
   <div class="top-bar">
-    <div class="stat-pill">👥 <span id="onlineCount">1</span></div>
+    <div class="stat-pill">👥 <span id="onlineCount">4</span></div>
     <div class="stat-pill">💰 <span id="coinsText">150</span></div>
     <div class="stat-pill">🍔 <span id="hungerText">100%</span></div>
     <div class="stat-pill">🏠 <span id="houseLvlText">خيمة ⛺</span></div>
@@ -175,11 +175,11 @@
   </div>
 
   <div class="side-btns">
-    <button class="icon-btn" onclick="shareGame()" title="نسخ الرابط">🔗</button>
-    <button class="icon-btn" onclick="triggerInstall()" title="تثبيت">📲</button>
-    <button class="icon-btn" onclick="teleportHome()" title="بيتي">⛺</button>
-    <button class="icon-btn" onclick="honkHorn()" title="بوري">📢</button>
-    <button class="icon-btn" onclick="collectDaily()" title="هدية">🎁</button>
+    <button class="icon-btn" onclick="shareGame()">🔗</button>
+    <button class="icon-btn" onclick="triggerInstall()">📲</button>
+    <button class="icon-btn" onclick="teleportHome()">⛺</button>
+    <button class="icon-btn" onclick="honkHorn()">📢</button>
+    <button class="icon-btn" onclick="collectDaily()">🎁</button>
   </div>
 
   <button id="actionPrompt" onclick="triggerAction()">تفاعل</button>
@@ -202,24 +202,24 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
-const svgIcon = "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231e3c72'/><text y='.9em' x='12' font-size='75'>🏙️</text></svg>");
-const iconLink = document.createElement('link'); iconLink.rel = 'icon'; iconLink.href = svgIcon; document.head.appendChild(iconLink);
-const appleLink = document.createElement('link'); appleLink.rel = 'apple-touch-icon'; appleLink.href = svgIcon; document.head.appendChild(appleLink);
-
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 function triggerInstall() {
-  if (deferredPrompt) { deferredPrompt.prompt(); }
-  else { alert("لتثبيت اللعبة كأيقونة:\nاضغط قائمة المتصفح (⋮) بالأعلى ثم اختر 'الإضافة إلى الشاشة الرئيسية'."); }
+  alert("لتثبيت اللعبة كأيقونة على شاشة هاتفك:\n\n1. اضغط على النقاط الثلاث (⋮) في أعلى المتصفح.\n2. اختر 'الإضافة إلى الشاشة الرئيسية' (Add to Home Screen).");
 }
 
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx;
-function initAudio() { if (!audioCtx) audioCtx = new AudioCtx(); }
+let audioCtx = null;
 function playSound(type) {
   try {
-    initAudio();
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
     osc.connect(gain); gain.connect(audioCtx.destination);
     const now = audioCtx.currentTime;
     if (type === 'jump') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(220, now); osc.frequency.exponentialRampToValueAtTime(520, now + 0.15);
+      gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc.start(now); osc.stop(now + 0.15);
+    } else if (type === 'coin') {
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(900, now + 0.08);
+      gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+      osc.start(now); osc.stop(now + 0.25);
+    } else if (type === 'build') {
+      osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.3);
