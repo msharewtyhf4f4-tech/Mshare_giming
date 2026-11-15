@@ -223,3 +223,5 @@ function playSound(type) {
       osc.start(now); osc.stop(now + 0.25);
     } else if (type === 'build') {
       osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.3);
+      gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc.start(now); osc.stop(now + 0.3);
