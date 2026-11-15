@@ -202,7 +202,6 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
-// محرك ثلاثي الأبعاد مدمج بالكامل داخل الملف (يعمل فوراً بدون تحميل أي ملفات خارجية!)
 const svgIcon = "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://w3.org' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231e3c72'/><text y='.9em' x='12' font-size='75'>🏙️</text></svg>");
 const iconLink = document.createElement('link'); iconLink.rel = 'icon'; iconLink.href = svgIcon; document.head.appendChild(iconLink);
 const appleLink = document.createElement('link'); appleLink.rel = 'apple-touch-icon'; appleLink.href = svgIcon; document.head.appendChild(appleLink);
@@ -222,3 +221,5 @@ function playSound(type) {
     initAudio();
     const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
     osc.connect(gain); gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    if (type === 'jump') {
